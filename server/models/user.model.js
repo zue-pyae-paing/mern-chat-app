@@ -19,11 +19,15 @@ const userSchema = new Schema(
     avatar: {
       type: String,
     },
+    avatarPublicId: {
+      type: String,
+    },
     status: {
       type: String,
       enum: ["online", "offline"],
       default: "offline",
     },
+    bio: { type: String, maxlength: 160 },
     resetToken: {
       type: String,
       default: null,
