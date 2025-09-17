@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
-import socketAuth from "./socketAuth.middleware.js";
-import User from "../../models/user.model.js";
+import socketAuth from "../middlewares/socketAuth.middleware.js";
+import User from "../models/user.model.js";
 let io;
 
 const initSocket = (httpServer) => {

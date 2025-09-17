@@ -4,10 +4,8 @@ import dotenv from "dotenv";
 import initSocket from "./socket/socket.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import authRoutes from "./modules/auth/auth.routes.js";
-
 import contactRoutes from "./modules/contact/contact.routes.js";
-
-import userRoutes from "../modules/user/user.routers.js";
+import userRoutes from "./modules/user/user.routes.js";
 
 
 dotenv.config();
