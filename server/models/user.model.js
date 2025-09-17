@@ -6,11 +6,15 @@ const userSchema = new Schema(
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
     },
     password: {
       type: String,
@@ -18,6 +22,7 @@ const userSchema = new Schema(
     },
     avatar: {
       type: String,
+      default: null,
     },
     status: {
       type: String,
@@ -32,6 +37,18 @@ const userSchema = new Schema(
       type: Date,
       default: null,
     },
+    contacts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    blocked: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     lastSeen: {
       type: Date,
       default: Date.now,
