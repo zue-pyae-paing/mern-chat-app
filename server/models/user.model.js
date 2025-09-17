@@ -24,11 +24,15 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    avatarPublicId: {
+      type: String,
+    },
     status: {
       type: String,
       enum: ["online", "offline"],
       default: "offline",
     },
+    bio: { type: String, maxlength: 160 },
     resetToken: {
       type: String,
       default: null,
