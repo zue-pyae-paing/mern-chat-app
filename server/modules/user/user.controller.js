@@ -3,6 +3,7 @@ import userService from "./user.services.js";
 export const getUser = async (req, res, next) => {
   try {
     const userId = req.userId;
+    console.log('userId', userId);
     const result = await userService.getUser(userId);
     res.status(200).json(result);
   } catch (error) {

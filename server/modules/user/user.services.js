@@ -4,9 +4,8 @@ import bcrypt from "bcrypt";
 import imageKit from "../../config/imageKit.js";
 import { uploadFolder } from "../../utils/uploadFolder.js";
 
-
 const userService = {
-  getUser: async ({ userId }) => {
+  getUser: async (userId) => {
     try {
       const user = await User.findById(userId);
       if (!user) {
@@ -35,7 +34,7 @@ const userService = {
       await user.save();
       return {
         success: true,
-        data: { message: "Password changed successfully" },
+        message: "Password changed successfully",
       };
     } catch (error) {
       throw error;
@@ -51,7 +50,7 @@ const userService = {
       await user.save();
       return {
         success: true,
-        data: { message: "Username changed successfully" },
+        message: "Username changed successfully",
       };
     } catch (error) {
       throw error;
@@ -79,7 +78,7 @@ const userService = {
       await user.save();
       return {
         success: true,
-        data: { message: "Avatar changed successfully" },
+        message: "Avatar changed successfully",
       };
     } catch (error) {
       throw error;
@@ -95,14 +94,12 @@ const userService = {
       await user.save();
       return {
         success: true,
-        data: { message: "Bio changed successfully" },
+        message: "Bio changed successfully",
       };
     } catch (error) {
       throw error;
     }
   },
-
-
 
   deleteAccount: async (userId) => {
     try {
@@ -111,12 +108,17 @@ const userService = {
         throw createError.NotFound("User not found");
       }
       if (user.avatarPublicId) {
-        await imageKit.deleteFile(user.avatarPublicId);
+        try {
+          await imageKit.deleteFile(user.avatarPublicId);
+        } catch (err) {
+          throw createError.InternalServerError("Failed to delete avatar");
+        }
       }
-      await user.remove();
+      await User.findByIdAndDelete(userId);
+
       return {
         success: true,
-        data: { message: "Account deleted successfully" },
+        message: "Account deleted successfully",
       };
     } catch (error) {
       throw error;

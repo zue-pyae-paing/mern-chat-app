@@ -1,3 +1,4 @@
+import { get } from "mongoose";
 import User from "../../models/user.model.js";
 import { getIO } from "../../socket/socket.js";
 
@@ -59,35 +60,51 @@ const contactService = {
       throw error;
     }
   },
-   findUser: async (search) => {
-    const users = await User.find({
-      $or: [
-        { email: { $regex: search, $options: "i" } },
-        { username: { $regex: search, $options: "i" } },
-      ],
-    }).select("username email avatar status");
-
-    return { success: true, users };
+  findUser: async (search) => {
+    try {
+      if (!search) {
+        return { success: true, users: [] };
+      }
+      const users = await User.find({
+        email: { $regex: search, $options: "i" },
+      }).select("username email avatar status");
+      return { success: true, users };
+    } catch (error) {
+      throw error;
+    }
   },
+
   blockUser: async (userId, blockedUserId) => {
     try {
       const user = await User.findById(userId);
       if (!user) {
-        throw new Error("User not found");
+        throw createError.NotFound("User not found");
       }
-      if (user.blocked.includes(blockedUserId)) {
-        throw new Error("User already blocked");
+
+      const targetUser = await User.findById(blockedUserId);
+      if (!targetUser) {
+        throw createError.NotFound("Target user not found");
       }
+
+      const alreadyBlocked = user.blocked.some(
+        (id) => id.toString() === blockedUserId
+      );
+      if (alreadyBlocked) {
+        throw createError.BadRequest("User already blocked");
+      }
+
       user.blocked.push(blockedUserId);
       await user.save();
+
       return {
         success: true,
-        data: { message: "User blocked successfully" },
+        message: "User blocked successfully",
       };
     } catch (error) {
       throw error;
     }
   },
+
   unblockUser: async (userId, blockedUserId) => {
     try {
       const user = await User.findById(userId);
@@ -101,7 +118,25 @@ const contactService = {
       await user.save();
       return {
         success: true,
-        data: { message: "User unblocked successfully" },
+        message: "User unblocked successfully",
+      };
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getBlockedUsers: async (userId) => {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      const blockedUsers = await User.find({
+        _id: { $in: user.blocked },
+      }).select("username email avatar");
+      return {
+        success: true,
+        data: { message: "Blocked users fetched successfully", blockedUsers },
       };
     } catch (error) {
       throw error;

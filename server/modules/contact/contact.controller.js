@@ -11,7 +11,6 @@ export const getContacts = async (req, res, next) => {
   }
 };
 
-
 export const saveContact = async (req, res, next) => {
   try {
     const userId = req.userId;
@@ -49,6 +48,16 @@ export const findUser = async (req, res, next) => {
   try {
     const search = req.query.search;
     const result = await contactService.findUser(search);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getBlockedUsers = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const result = await contactService.getBlockedUsers(userId);
     res.status(200).json(result);
   } catch (error) {
     next(error);
