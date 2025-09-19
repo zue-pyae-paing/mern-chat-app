@@ -32,7 +32,7 @@ export const changeUsername = async (req, res, next) => {
     next(error);
   }
 };
-export const chageAvatar = async (req, res, next) => {
+export const changeAvatar = async (req, res, next) => {
   try {
     const file = req.file;
     const userId = req.userId;

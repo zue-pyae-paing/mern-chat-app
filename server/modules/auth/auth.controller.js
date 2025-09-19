@@ -27,7 +27,7 @@ export const forgotPassword = async (req, res, next) => {
     const result = await authService.forgotPassword(email);
     const resetLink = `${req.protocol}://${req.get(
       "host"
-    )}/api/v1/auth/reset-password/${result.resetToken}`;
+    )}/api/v1/auth/password/reset/${result.resetToken}`;
     await sendMail({
       to: email,
       subject: "Reset Password",

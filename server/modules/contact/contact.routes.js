@@ -1,14 +1,25 @@
 import { Router } from "express";
 import authorize from "../../middlewares/auth.middleware.js";
-import { getContacts, findUser, blockUser, unblockUser, saveContact, getBlockedUsers, } from "./contact.controller.js";
+import {
+  listContacts,
+  searchUsers,
+  blockUser,
+  unblockUser,
+  addContact,
+  listBlockedUsers,
+} from "./contact.controller.js";
 
 const router = Router();
 
-router.get("/", authorize, getContacts);
-router.get("/find-user", authorize, findUser);
-router.get('/blocked-users', authorize, getBlockedUsers);
-router.post("/block-user/:id", authorize, blockUser);
-router.post("/unblock-user/:id", authorize, unblockUser);
-router.post("/save-contact", authorize, saveContact);
+router.get("/", authorize, listContacts);
+
+router.get("/search", authorize, searchUsers);
+
+router.get("/blocked", authorize, listBlockedUsers);
+
+router.patch("/block/:id", authorize, blockUser);
+router.patch("/unblock/:id", authorize, unblockUser);
+
+router.post("/", authorize, addContact);
 
 export default router;

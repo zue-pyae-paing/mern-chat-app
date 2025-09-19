@@ -1,21 +1,21 @@
 import contactService from "./contact.service.js";
 
-export const getContacts = async (req, res, next) => {
+export const listContacts = async (req, res, next) => {
   try {
     const search = req.query.search;
     const userId = req.userId;
-    const result = await contactService.getContacts(userId, search);
+    const result = await contactService.listContacts(userId, search);
     res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
 
-export const saveContact = async (req, res, next) => {
+export const addContact = async (req, res, next) => {
   try {
     const userId = req.userId;
     const contactEmail = req.body.email;
-    const result = await contactService.saveContact(userId, contactEmail);
+    const result = await contactService.addContact(userId, contactEmail);
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -44,20 +44,20 @@ export const unblockUser = async (req, res, next) => {
   }
 };
 
-export const findUser = async (req, res, next) => {
+export const searchUsers = async (req, res, next) => {
   try {
     const search = req.query.search;
-    const result = await contactService.findUser(search);
+    const result = await contactService.searchUsers(search);
     res.status(200).json(result);
   } catch (error) {
     next(error);
   }
 };
 
-export const getBlockedUsers = async (req, res, next) => {
+export const listBlockedUsers = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const result = await contactService.getBlockedUsers(userId);
+    const result = await contactService.listBlockedUsers(userId);
     res.status(200).json(result);
   } catch (error) {
     next(error);

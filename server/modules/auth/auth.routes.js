@@ -16,15 +16,18 @@ import {
 const router = Router();
 
 router.post("/register", registerValidation, validate, register);
+
 router.post("/login", loginValidation, validate, login);
+
 router.post(
-  "/forgot-password",
+  "/password/forgot",
   forgotPasswordValidation,
   validate,
   forgotPassword
 );
-router.post(
-  "/reset-password/:resetToken",
+
+router.put(
+  "/password/reset/:resetToken",
   resetPasswordValidation,
   validate,
   resetPassword
