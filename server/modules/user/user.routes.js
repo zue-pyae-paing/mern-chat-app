@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   getUser,
   changePassword,
-  chageAvatar,
+  changeAvatar,
   deleteAccount,
   changeBio,
   changeUsername,
@@ -18,23 +18,28 @@ import upload from "../../middlewares/upload.middleware.js";
 
 const router = Router();
 
-router.get("/", authorize, getUser);
-router.post(
-  "/change-username",
+router.get("/me", authorize, getUser);
+
+router.put(
+  "/me/username",
   authorize,
   usernameValidation,
   validate,
   changeUsername
 );
-router.post(
-  "/change-password",
+
+router.put(
+  "/me/password",
   authorize,
   changePasswordValidation,
   validate,
   changePassword
 );
-router.post("/change-avatar", authorize, upload.single("avatar"), chageAvatar);
-router.post("/change-bio", authorize, bioValidation, validate, changeBio);
-router.delete("/delete-account", authorize, deleteAccount);
+
+router.put("/me/avatar", authorize, upload.single("avatar"), changeAvatar);
+
+router.put("/me/bio", authorize, bioValidation, validate, changeBio);
+
+router.delete("/me", authorize, deleteAccount);
 
 export default router;

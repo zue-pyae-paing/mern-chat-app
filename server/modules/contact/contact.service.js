@@ -3,7 +3,7 @@ import User from "../../models/user.model.js";
 import { getIO } from "../../socket/socket.js";
 
 const contactService = {
-  getContacts: async (userId, search) => {
+  listContacts: async (userId, search) => {
     try {
       // ကိုယ့်ရဲ့ contacts တွေကို ဆွဲထုတ်မယ်
       const currentUser = await User.findById(userId)
@@ -32,7 +32,7 @@ const contactService = {
       throw error;
     }
   },
-  saveContact: async (userId, contactEmail) => {
+  addContact: async (userId, contactEmail) => {
     try {
       const user = await User.findById(userId);
       const contactUser = await User.findOne({ email: contactEmail });
@@ -60,7 +60,7 @@ const contactService = {
       throw error;
     }
   },
-  findUser: async (search) => {
+  searchUsers: async (search) => {
     try {
       if (!search) {
         return { success: true, users: [] };
@@ -125,7 +125,7 @@ const contactService = {
     }
   },
 
-  getBlockedUsers: async (userId) => {
+  listBlockedUsers: async (userId) => {
     try {
       const user = await User.findById(userId);
       if (!user) {

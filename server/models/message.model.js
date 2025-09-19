@@ -1,0 +1,37 @@
+import { Schema, model } from "mongoose";
+
+const messageSchema = new Schema(
+  {
+    conversation: {
+      type: Schema.Types.ObjectId,
+      ref: "Conversation",
+      required: true,
+    },
+    sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    content: { type: String, required: true },
+    type: {
+      type: String,
+      enum: ["text", "image", "audio", "video"],
+      default: "text",
+    },
+    mediaUrl: { type: String, default: null },
+    mediaPublicId: { type: String },
+    status: {
+      type: String,
+      enum: ["sent", "delivered", "read"],
+      default: "sent",
+    },
+    edited: { type: Boolean, default: false },
+    editedAt: { type: Date, default: null },
+    replyTo: { type: Schema.Types.ObjectId, ref: "Message", default: null },
+    deletedFor: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+export default model("Message", messageSchema);
