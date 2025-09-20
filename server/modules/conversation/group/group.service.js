@@ -5,45 +5,44 @@ import imageKit from "../../../config/imageKit.js";
 import Message from "../../../models/message.model.js";
 import { uploadFolder } from "../../../utils/uploadFolder.js";
 
-
 const groupService = {
   listGroupsForUser: async (userId, search, limit = 20, cursor) => {
     try {
       if (!userId) throw createError.BadRequest("User ID is required");
+
       const query = {
         type: "group",
         participants: userId,
       };
-      // cursor → date-based
+
+      // cursor → date-based pagination
       if (cursor) {
         query.updatedAt = { $lt: new Date(cursor) };
       }
+
+      // search by group name only
+      if (search) {
+        const regex = new RegExp(search, "i");
+        query.name = regex;
+      }
+
       const conversations = await Conversation.find(query)
         .populate("participants", "username avatar status lastSeen")
         .populate({
           path: "lastMessage",
           populate: { path: "sender", select: "username avatar" },
         })
-        .sort({ updatedAt: -1 }) // newest first
+        .sort({ updatedAt: -1 })
         .limit(limit)
         .lean();
-
-      // search filter
-      let filtered = conversations;
-      if (search) {
-        const regex = new RegExp(search, "i");
-        filtered = conversations.filter((c) =>
-          c.participants.some((p) => regex.test(p.username))
-        );
-      }
 
       return {
         success: true,
         data: {
-          conversations: filtered,
+          conversations,
           nextCursor:
-            filtered.length > 0
-              ? filtered[filtered.length - 1].updatedAt
+            conversations.length > 0
+              ? conversations[conversations.length - 1].updatedAt
               : null,
         },
       };
@@ -51,6 +50,7 @@ const groupService = {
       throw error;
     }
   },
+
   createGroup: async (data, userId) => {
     try {
       const { name, members } = data;
@@ -352,7 +352,7 @@ const groupService = {
       const messages = await Message.find({ conversation: conversationId });
 
       for (const message of messages) {
-        if (message.mediaUrl || message.mediaPublicId) {
+        if (message.mediaPublicId) {
           await imageKit.deleteFile(message.mediaPublicId);
         }
       }
@@ -363,7 +363,7 @@ const groupService = {
       await Conversation.findByIdAndDelete(conversationId);
       return {
         success: true,
-        message: "Group deleted successfully",
+        data: { message: "Group deleted successfully" },
       };
     } catch (error) {
       throw error;

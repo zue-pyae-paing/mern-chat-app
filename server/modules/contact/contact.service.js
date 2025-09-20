@@ -1,22 +1,19 @@
-import { get } from "mongoose";
 import User from "../../models/user.model.js";
-import { getIO } from "../../socket/socket.js";
-
+import createError from "http-errors";
 const contactService = {
   listContacts: async (userId, search) => {
     try {
-      // ကိုယ့်ရဲ့ contacts တွေကို ဆွဲထုတ်မယ်
       const currentUser = await User.findById(userId)
         .select("contacts blocked")
         .populate({
           path: "contacts",
-          match: search ? { username: { $regex: search, $options: "i" } } : {}, // optional search
+          match: search ? { username: { $regex: search, $options: "i" } } : {},
           select: "username avatar status lastSeen",
         })
         .lean();
 
       if (!currentUser) {
-        throw new Error("User not found");
+        throw createError.NotFound("User not found");
       }
 
       // Blocked ကို filter လုပ်မယ်
@@ -37,20 +34,13 @@ const contactService = {
       const user = await User.findById(userId);
       const contactUser = await User.findOne({ email: contactEmail });
       if (!user) {
-        throw new Error("User not found");
+        throw createError.NotFound("User not found");
       }
       if (user.contacts.includes(contactUser._id)) {
-        throw new Error("Contact already exists");
+        throw createError.BadRequest("Contact already exists");
       }
       user.contacts.push(contactUser._id);
       await user.save();
-
-      getIO()
-        .to(contactUser._id)
-        .emit("user:contact", {
-          by: userId,
-          contact: { _id: contactUser._id, username: contactUser.username },
-        });
 
       return {
         success: true,
@@ -109,10 +99,10 @@ const contactService = {
     try {
       const user = await User.findById(userId);
       if (!user) {
-        throw new Error("User not found");
+        throw createError.NotFound("User not found");
       }
       if (!user.blocked.includes(blockedUserId)) {
-        throw new Error("User not blocked");
+        throw createError.BadRequest("User is not blocked");
       }
       user.blocked.pull(blockedUserId);
       await user.save();
@@ -129,7 +119,7 @@ const contactService = {
     try {
       const user = await User.findById(userId);
       if (!user) {
-        throw new Error("User not found");
+        throw createError.NotFound("User not found");
       }
       const blockedUsers = await User.find({
         _id: { $in: user.blocked },
