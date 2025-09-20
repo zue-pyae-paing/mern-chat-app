@@ -8,10 +8,12 @@ const socketAuth = (socket, next) => {
 
     const decoded = verifyToken(token);
     socket.userId = decoded.id;
+    socket.userName = decoded.name;
+    console.log("Socket authenticated:", decoded);
     next();
   } catch (error) {
     next(createError.Unauthorized());
   }
 };
 
-export default socketAuth
+export default socketAuth;

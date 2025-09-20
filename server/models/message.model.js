@@ -6,6 +6,7 @@ const messageSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Conversation",
       required: true,
+      index: true,
     },
     sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
     content: { type: String, required: true },
@@ -20,6 +21,7 @@ const messageSchema = new Schema(
       type: String,
       enum: ["sent", "delivered", "read"],
       default: "sent",
+      index: true,
     },
     edited: { type: Boolean, default: false },
     editedAt: { type: Date, default: null },
@@ -34,4 +36,5 @@ const messageSchema = new Schema(
   { timestamps: true }
 );
 
+messageSchema.index({ conversation: 1, createdAt: -1 });
 export default model("Message", messageSchema);
