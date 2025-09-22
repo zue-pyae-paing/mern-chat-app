@@ -20,7 +20,7 @@ const authService = {
       });
       return { message: "User created successfully" };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   login: async ({ email, password }) => {
@@ -45,7 +45,7 @@ const authService = {
         data: { token, message: "Login successful", user: userWithoutPassword },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -61,7 +61,7 @@ const authService = {
       await user.save();
       return { resetToken };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   resetPassword: async (resetToken, newPassword) => {
@@ -81,7 +81,7 @@ const authService = {
       await user.save();
       return { message: "Password reset successful" };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 };

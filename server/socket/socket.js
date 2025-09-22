@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import GroupSocket from "./handlers/group.socket.js";
 import ContactSocket from "./handlers/contact.socket.js";
 import PrivateSocket from "./handlers/private.socket.js";
+import MessageSocket from "./handlers/message.socket.js";
 
 let io;
 
@@ -28,6 +29,7 @@ const initSocket = (httpServer) => {
     ContactSocket(socket, io);
     PrivateSocket(socket, io);
     GroupSocket(socket, io);
+    MessageSocket(socket, io);
 
     socket.on("disconnect", async () => {
       await User.findByIdAndUpdate(socket.userId, {

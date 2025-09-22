@@ -15,7 +15,7 @@ const userService = {
       const { password: userPassword, ...userWithoutPassword } = userObject;
       return { success: true, data: userWithoutPassword };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   changePassword: async (data, userId) => {
@@ -37,7 +37,7 @@ const userService = {
         message: "Password changed successfully",
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   changeUsername: async (username, userId) => {
@@ -53,7 +53,7 @@ const userService = {
         message: "Username changed successfully",
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   chageAvatar: async (file, userId) => {
@@ -81,7 +81,7 @@ const userService = {
         message: "Avatar changed successfully",
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   changeBio: async (bio, userId) => {
@@ -97,7 +97,7 @@ const userService = {
         message: "Bio changed successfully",
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -121,7 +121,7 @@ const userService = {
         message: "Account deleted successfully",
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 };
