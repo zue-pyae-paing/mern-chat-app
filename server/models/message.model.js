@@ -1,5 +1,4 @@
-import { Schema, model } from "mongoose";
-
+// message.model.js
 const messageSchema = new Schema(
   {
     conversation: {
@@ -9,10 +8,15 @@ const messageSchema = new Schema(
       index: true,
     },
     sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    content: { type: String, required: true },
+    content: {
+      type: String,
+      required: function () {
+        return !this.mediaUrl; // text required only if no media
+      },
+    },
     type: {
       type: String,
-      enum: ["text", "image", "audio", "video"],
+      enum: ["text", "image", "audio", "video", "file"],
       default: "text",
     },
     mediaUrl: { type: String, default: null },
@@ -25,13 +29,9 @@ const messageSchema = new Schema(
     },
     edited: { type: Boolean, default: false },
     editedAt: { type: Date, default: null },
+    pinned: { type: Boolean, default: false },
     replyTo: { type: Schema.Types.ObjectId, ref: "Message", default: null },
-    deletedFor: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    deletedFor: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

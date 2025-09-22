@@ -47,7 +47,7 @@ const groupService = {
         },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -106,7 +106,7 @@ const groupService = {
         data: { conversation },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   addGroupMembers: async (conversationId, members) => {
@@ -154,7 +154,7 @@ const groupService = {
         data: { message: "Members added successfully", conversation },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -202,7 +202,7 @@ const groupService = {
         data: { message: "Members removed successfully", conversation },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -240,7 +240,7 @@ const groupService = {
         throw createError.BadRequest("You are not a member of this group");
       }
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   renameGroup: async (conversationId, name) => {
@@ -260,7 +260,7 @@ const groupService = {
         data: { message: "Group renamed successfully", conversation },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -295,7 +295,7 @@ const groupService = {
         data: { message: "Group image updated successfully", conversation },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   changeGroupDescription: async (conversationId, description) => {
@@ -319,7 +319,7 @@ const groupService = {
         },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   transferGroupAdmin: async (conversationId, newAdminId) => {
@@ -338,7 +338,7 @@ const groupService = {
         },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   deleteGroup: async (conversationId) => {
@@ -366,7 +366,7 @@ const groupService = {
         data: { message: "Group deleted successfully" },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 };

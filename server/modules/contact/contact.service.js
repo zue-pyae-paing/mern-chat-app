@@ -26,7 +26,7 @@ const contactService = {
         data: { message: "Contacts fetched successfully", contacts },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   addContact: async (userId, contactEmail) => {
@@ -47,7 +47,7 @@ const contactService = {
         data: { message: "Contact saved successfully" },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
   searchUsers: async (search) => {
@@ -60,7 +60,7 @@ const contactService = {
       }).select("username email avatar status");
       return { success: true, users };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -91,7 +91,7 @@ const contactService = {
         message: "User blocked successfully",
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -111,7 +111,7 @@ const contactService = {
         message: "User unblocked successfully",
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -129,7 +129,7 @@ const contactService = {
         data: { message: "Blocked users fetched successfully", blockedUsers },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 };

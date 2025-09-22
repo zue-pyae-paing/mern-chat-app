@@ -8,6 +8,7 @@ import authRoutes from "./modules/auth/auth.routes.js";
 import userRoutes from "./modules/user/user.routes.js";
 import contactRoutes from "./modules/contact/contact.routes.js";
 import conversationRoutes from "./modules/conversation/index.routes.js";
+import messageRoutes from "./modules/messages/message.routes.js";
 
 dotenv.config();
 const app = express();
@@ -22,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //routes
 app.get("/api/v1", (req, res) => {
-  res.status(200).json({ message: "Welcome to the Chat API" });
+  res.status(200).json({ message: "Welcome to Chat App" });
 });
 
 app.use("/api/v1/auth", authRoutes);
@@ -32,6 +33,8 @@ app.use("/api/v1/contacts", contactRoutes);
 app.use("/api/v1/user", userRoutes);
 
 app.use("/api/v1/conversations", conversationRoutes);
+
+app.use("/api/v1/messages", messageRoutes);
 
 //error
 app.use(errorHandler);

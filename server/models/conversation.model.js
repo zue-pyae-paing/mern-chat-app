@@ -21,6 +21,7 @@ const conversationSchema = new Schema(
     groupImagePublicId: { type: String },
     lastMessage: { type: Schema.Types.ObjectId, ref: "Message", default: null },
     unreadCounts: { type: Map, of: { type: Number, default: 0 }, default: {} },
+    pinnedMessages: [{ type: Schema.Types.ObjectId, ref: "Message" }],
     adminId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     groupDescription: { type: String, default: null, maxlength: 150 },
   },

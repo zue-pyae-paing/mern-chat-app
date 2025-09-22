@@ -4,61 +4,61 @@ import Message from "../../../models/message.model.js";
 import imageKit from "../../../config/imageKit.js";
 
 const conversationService = {
-getPrivateConversations: async (userId, search, cursor, limit = 20) => {
-  try {
-    if (!userId) throw createError.BadRequest("User ID is required");
+  getPrivateConversations: async (userId, search, cursor, limit = 20) => {
+    try {
+      if (!userId) throw createError.BadRequest("User ID is required");
 
-    const query = {
-      type: "private",
-      participants: userId,
-    };
-    if (cursor) {
-      query.updatedAt = { $lt: new Date(cursor) };
+      const query = {
+        type: "private",
+        participants: userId,
+      };
+      if (cursor) {
+        query.updatedAt = { $lt: new Date(cursor) };
+      }
+
+      // 👉 Search by counterpart username
+      let conversationsQuery = Conversation.find(query)
+        .populate({
+          path: "participants",
+          select: "username avatar status lastSeen",
+          match: search
+            ? { username: { $regex: search, $options: "i", $ne: userId } }
+            : {}, // exclude self
+        })
+        .populate({
+          path: "lastMessage",
+          populate: { path: "sender", select: "username avatar" },
+        })
+        .sort({ updatedAt: -1 })
+        .limit(limit)
+        .lean();
+
+      let conversations = await conversationsQuery;
+
+      // ❌ Remove convos where only self is left after match
+      if (search) {
+        conversations = conversations.filter(
+          (c) =>
+            c.participants.length > 0 &&
+            !c.participants.every((p) => p._id.toString() === userId.toString())
+        );
+      }
+
+      return {
+        success: true,
+        data: {
+          message: "Private conversations fetched successfully",
+          conversations,
+          nextCursor:
+            conversations.length > 0
+              ? conversations[conversations.length - 1].updatedAt
+              : null,
+        },
+      };
+    } catch (error) {
+      throw createError.InternalServerError(error.message);
     }
-
-    // 👉 Search by counterpart username
-    let conversationsQuery = Conversation.find(query)
-      .populate({
-        path: "participants",
-        select: "username avatar status lastSeen",
-        match: search
-          ? { username: { $regex: search, $options: "i", $ne: userId } }
-          : {}, // exclude self
-      })
-      .populate({
-        path: "lastMessage",
-        populate: { path: "sender", select: "username avatar" },
-      })
-      .sort({ updatedAt: -1 })
-      .limit(limit)
-      .lean();
-
-    let conversations = await conversationsQuery;
-
-    // ❌ Remove convos where only self is left after match
-    if (search) {
-      conversations = conversations.filter(
-        (c) =>
-          c.participants.length > 0 &&
-          !c.participants.every((p) => p._id.toString() === userId.toString())
-      );
-    }
-
-    return {
-      success: true,
-      data: {
-        message: "Private conversations fetched successfully",
-        conversations,
-        nextCursor:
-          conversations.length > 0
-            ? conversations[conversations.length - 1].updatedAt
-            : null,
-      },
-    };
-  } catch (error) {
-    throw error;
-  }
-},
+  },
 
   createConversation: async (userId, participantId) => {
     try {
@@ -106,7 +106,7 @@ getPrivateConversations: async (userId, search, cursor, limit = 20) => {
         data: { message: "Conversation created successfully", conversation },
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 
@@ -140,7 +140,7 @@ getPrivateConversations: async (userId, search, cursor, limit = 20) => {
         message: "Conversation deleted successfully",
       };
     } catch (error) {
-      throw error;
+      throw createError.InternalServerError(error.message);
     }
   },
 };
