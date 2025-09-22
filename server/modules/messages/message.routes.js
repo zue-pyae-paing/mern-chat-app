@@ -12,7 +12,7 @@ import {
   unpinMessage,
   getPinnedMessage,
   messageStatus,
-} from "../modules/message/message.controller.js";
+} from "./message.controller.js";
 
 const router = Router();
 

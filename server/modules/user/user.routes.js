@@ -12,7 +12,7 @@ import {
   bioValidation,
   changePasswordValidation,
   usernameValidation,
-} from "../../validations/user.validations.js";
+} from "../../validations/user.validation.js";
 import { validate } from "../../middlewares/validation.middleware.js";
 import upload from "../../middlewares/upload.middleware.js";
 

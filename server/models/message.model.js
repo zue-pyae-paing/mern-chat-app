@@ -1,3 +1,4 @@
+import { Schema, model } from "mongoose";
 // message.model.js
 const messageSchema = new Schema(
   {

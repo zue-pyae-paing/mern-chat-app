@@ -11,7 +11,7 @@ import {
   loginValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
-} from "../../validations/auth.validations.js";
+} from "../../validations/auth.validation.js";
 
 const router = Router();
 

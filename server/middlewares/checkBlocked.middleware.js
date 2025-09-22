@@ -1,6 +1,6 @@
 import createError from "http-errors";
-import User from "../models/User.js";
-import Conversation from "../models/Conversation.js";
+import User from "../models/user.model.js";
+import Conversation from "../models/conversation.model.js";
 
 const checkBlock = async (req, res, next) => {
   try {
