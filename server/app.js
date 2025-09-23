@@ -1,5 +1,6 @@
 import express from "express";
 import { createServer } from "http";
+import cors from "cors";
 import dotenv from "dotenv";
 import initSocket from "./socket/socket.js";
 import errorHandler from "./middlewares/error.middleware.js";
@@ -18,6 +19,13 @@ const server = createServer(app);
 initSocket(server);
 
 //middleware
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

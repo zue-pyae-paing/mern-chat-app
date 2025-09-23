@@ -25,9 +25,7 @@ export const forgotPassword = async (req, res, next) => {
   try {
     const email = req.body.email;
     const result = await authService.forgotPassword(email);
-    const resetLink = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/auth/password/reset/${result.resetToken}`;
+    const resetLink = `http://localhost:3000/reset-password/${result.resetToken}`;
     await sendMail({
       to: email,
       subject: "Reset Password",

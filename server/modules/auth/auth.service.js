@@ -27,12 +27,12 @@ const authService = {
     try {
       const user = await User.findOne({ email });
       if (!user) {
-        throw createError.NotFound("User not found");
+        throw createError.NotFound("Invalid credentials!");
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        throw createError.Unauthorized("Invalid credentials");
+        throw createError.Unauthorized("Invalid credentials!");
       }
 
       const token = generateToken(user._id);
