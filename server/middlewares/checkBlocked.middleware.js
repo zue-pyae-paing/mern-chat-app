@@ -4,10 +4,9 @@ import Conversation from "../models/conversation.model.js";
 
 const checkBlock = async (req, res, next) => {
   try {
-    const userId = req.userId; // ✅ from auth middleware
+    const userId = req.userId; 
     const conversationId = req.params.conversationId || req.body.conversationId;
-    const participantId = req.body.participantId || req.params.id;
-
+    
     // Conversation check (if conversationId exists)
     if (conversationId) {
       const conversation = await Conversation.findById(conversationId);
@@ -24,7 +23,6 @@ const checkBlock = async (req, res, next) => {
       return await blockCheck(userId, otherId, next);
     }
 
-    // If no conversationId, fall back to participantId (e.g. starting new private chat)
     if (!participantId) {
       throw createError.BadRequest("Participant ID is required");
     }

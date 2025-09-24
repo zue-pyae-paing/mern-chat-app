@@ -63,3 +63,14 @@ export const listBlockedUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteContact = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const contactId = req.params.id;
+    const result = await contactService.deleteContact(userId, contactId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

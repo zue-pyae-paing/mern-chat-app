@@ -26,18 +26,18 @@ router.post(
   sendMessage
 );
 
-router.put("/:messageId", authorize, editMessage);
+router.put("/:conversationId/:messageId", authorize, editMessage);
 
-router.post("/reply/:messageId", authorize, replyToMessage);
+router.post("/reply/:conversationId/:messageId", authorize, replyToMessage);
 
-router.put("/pin/:messageId", authorize, pinMessage);
+router.put("/pin/:conversationId/:messageId", authorize, pinMessage);
 
-router.put("/unpin/:messageId", authorize, unpinMessage);
+router.put("/unpin/:conversationId/:messageId", authorize, unpinMessage);
 
 router.get("/pin/:conversationId", authorize, getPinnedMessage);
 
-router.put("/status/:messageId", authorize, messageStatus);
+router.put("/status/:conversationId/:messageId", authorize, messageStatus);
 
-router.delete("/:messageId", authorize, deleteMessage);
+router.delete("/:conversationId/delete/:messageId", authorize, deleteMessage);
 
 export default router;

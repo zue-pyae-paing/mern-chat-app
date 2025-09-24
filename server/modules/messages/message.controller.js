@@ -4,7 +4,12 @@ export const getMessages = async (req, res, next) => {
   try {
     const { conversationId } = req.params;
     const { search, limit, cursor } = req.query;
-    const messages = await messageService.getMessages(conversationId, search, limit, cursor);
+    const messages = await messageService.getMessages(
+      conversationId,
+      search,
+      limit,
+      cursor
+    );
     res.status(200).json(messages);
   } catch (error) {
     next(error);
@@ -16,8 +21,13 @@ export const sendMessage = async (req, res, next) => {
     const userId = req.userId;
     const { conversationId } = req.params;
     const { content } = req.body;
-    const file = req.files;
-    const message = await messageService.sendMessage(userId, conversationId, content, file);
+    const files = req.files;
+    const message = await messageService.sendMessage(
+      userId,
+      conversationId,
+      content,
+      files
+    );
     res.status(200).json(message);
   } catch (error) {
     next(error);
@@ -27,8 +37,12 @@ export const sendMessage = async (req, res, next) => {
 export const deleteMessage = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const { messageId } = req.params;
-    const result = await messageService.deleteMessage(userId, messageId);
+    const { conversationId, messageId } = req.params;
+    const result = await messageService.deleteMessage(
+      userId,
+      conversationId,
+      messageId
+    );
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -38,9 +52,14 @@ export const deleteMessage = async (req, res, next) => {
 export const editMessage = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const { messageId } = req.params;
+    const { messageId, conversationId } = req.params;
     const { content } = req.body;
-    const result = await messageService.editMessage(userId, messageId, content);
+    const result = await messageService.editMessage(
+      userId,
+      conversationId,
+      messageId,
+      content
+    );
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -50,9 +69,14 @@ export const editMessage = async (req, res, next) => {
 export const replyToMessage = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const { messageId } = req.params;
+    const { conversationId, messageId } = req.params;
     const { content } = req.body;
-    const result = await messageService.replyMessage(userId, messageId, content);
+    const result = await messageService.replyMessage(
+      userId,
+      conversationId,
+      messageId,
+      content
+    );
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -61,8 +85,8 @@ export const replyToMessage = async (req, res, next) => {
 
 export const pinMessage = async (req, res, next) => {
   try {
-    const { messageId } = req.params;
-    const result = await messageService.pinMessage(messageId);
+    const { conversationId, messageId } = req.params;
+    const result = await messageService.pinMessage(conversationId, messageId);
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -71,8 +95,8 @@ export const pinMessage = async (req, res, next) => {
 
 export const unpinMessage = async (req, res, next) => {
   try {
-    const { messageId } = req.params;
-    const result = await messageService.unpinMessage(messageId);
+    const { conversationId, messageId } = req.params;
+    const result = await messageService.unpinMessage(conversationId, messageId);
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -91,9 +115,13 @@ export const getPinnedMessage = async (req, res, next) => {
 
 export const messageStatus = async (req, res, next) => {
   try {
-    const { messageId } = req.params;
+    const { conversationId, messageId } = req.params;
     const { status } = req.body;
-    const result = await messageService.messageStatus(messageId, status);
+    const result = await messageService.messageStatus(
+      conversationId,
+      messageId,
+      status
+    );
     res.status(200).json(result);
   } catch (error) {
     next(error);

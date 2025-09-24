@@ -132,6 +132,22 @@ const contactService = {
       throw createError.InternalServerError(error.message);
     }
   },
+  deleteContact: async (userId, contactId) => {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw createError.NotFound("User not found");
+      }
+      user.contacts.pull(contactId);
+      await user.save();
+      return {
+        success: true,
+        message: "Contact deleted successfully",
+      };
+    } catch (error) {
+      throw createError.InternalServerError(error.message);
+    }
+  },
 };
 
 export default contactService;

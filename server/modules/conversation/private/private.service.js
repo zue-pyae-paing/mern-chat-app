@@ -4,6 +4,47 @@ import Message from "../../../models/message.model.js";
 import imageKit from "../../../config/imageKit.js";
 
 const conversationService = {
+  getAllConversations: async (userId, serach, cursor, limit = 20) => {
+    try {
+      if (!userId) throw createError.BadRequest("User ID is required");
+      const query = {
+        participants: userId,
+      };
+
+      if (cursor) {
+        query.updatedAt = { $lt: new Date(cursor) };
+      }
+
+      let conversations = await Conversation.find(query)
+        .populate({
+          path: "participants",
+          select: "username avatar status lastSeen",
+        })
+        .populate({
+          path: "lastMessage",
+          populate: { path: "sender", select: "username avatar" },
+        })
+        .sort({ updatedAt: -1 })
+        .limit(limit)
+        .lean();
+      if (serach) {
+        const regex = new RegExp(serach, "i");
+        conversations = conversations.filter(
+          (c) => regex.test(c.name) || regex.test(c.participants[1].username)
+        );
+      }
+      return {
+        success: true,
+        data: {
+          message: "Conversations fetched successfully",
+          conversations,
+          nextCursor: conversations[conversations.length - 1]?.updatedAt,
+        },
+      };
+    } catch (error) {
+      throw createError.InternalServerError(error.message);
+    }
+  },
   getPrivateConversations: async (userId, search, cursor, limit = 20) => {
     try {
       if (!userId) throw createError.BadRequest("User ID is required");
@@ -12,18 +53,15 @@ const conversationService = {
         type: "private",
         participants: userId,
       };
+
       if (cursor) {
         query.updatedAt = { $lt: new Date(cursor) };
       }
 
-      // 👉 Search by counterpart username
-      let conversationsQuery = Conversation.find(query)
+      let conversations = await Conversation.find(query)
         .populate({
           path: "participants",
           select: "username avatar status lastSeen",
-          match: search
-            ? { username: { $regex: search, $options: "i", $ne: userId } }
-            : {}, // exclude self
         })
         .populate({
           path: "lastMessage",
@@ -33,14 +71,19 @@ const conversationService = {
         .limit(limit)
         .lean();
 
-      let conversations = await conversationsQuery;
+      // 👉 filter only counterpart
+      conversations = conversations.map((c) => {
+        c.counterpart = c.participants.find(
+          (p) => p._id.toString() !== userId.toString()
+        );
+        return c;
+      });
 
-      // ❌ Remove convos where only self is left after match
+      // 👉 search by counterpart username
       if (search) {
+        const regex = new RegExp(search, "i");
         conversations = conversations.filter(
-          (c) =>
-            c.participants.length > 0 &&
-            !c.participants.every((p) => p._id.toString() === userId.toString())
+          (c) => c.counterpart && regex.test(c.counterpart.username)
         );
       }
 
@@ -127,8 +170,10 @@ const conversationService = {
 
       const messages = await Message.find({ conversation: conversationId });
       for (const msg of messages) {
-        if (msg.mediaPublicId) {
-          await imageKit.deleteFile(msg.mediaPublicId);
+        if (msg.attachments) {
+          for (const attachment of msg.attachments) {
+            await imageKit.deleteFile(attachment.fileId);
+          }
         }
       }
 

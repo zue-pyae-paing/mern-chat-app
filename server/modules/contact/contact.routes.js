@@ -7,6 +7,7 @@ import {
   unblockUser,
   addContact,
   listBlockedUsers,
+  deleteContact,
 } from "./contact.controller.js";
 
 const router = Router();
@@ -21,5 +22,7 @@ router.patch("/block/:id", authorize, blockUser);
 router.patch("/unblock/:id", authorize, unblockUser);
 
 router.post("/", authorize, addContact);
+
+router.delete("/:id", authorize, deleteContact);
 
 export default router;

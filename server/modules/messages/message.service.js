@@ -19,6 +19,7 @@ const messageService = {
       const messages = await Message.find(query)
         .sort({ createdAt: -1 })
         .populate("sender", "username avatar")
+        .populate("replyTo", "content attachments")
         .limit(limit)
         .lean();
 
@@ -70,15 +71,18 @@ const messageService = {
           ? "audio"
           : "file",
       }));
-      message.type = "media";
+      message.type = message.attachments[0].type;
     } else {
       message.type = "text";
+      message.content = content;
     }
 
     await message.save();
 
     conversation.lastMessage =
-      message.type === "text" ? message.content : `[${message.type}]`;
+      message.type === "text"
+        ? message.content
+        : `${message.attachments[0].url}`;
     await conversation.save();
 
     return {
@@ -86,23 +90,48 @@ const messageService = {
       data: { message: "Message sent successfully", messageData: message },
     };
   },
-  // ✅ Edit Text Message
-  editMessage: async (userId, messageId, content) => {
+
+  editMessage: async (userId, conversationId, messageId, content) => {
     try {
+      if (!conversationId)
+        throw createError.BadRequest("Conversation ID is required");
+
+      const conversation = await Conversation.findById(conversationId);
+      if (!conversation) throw createError.NotFound("Conversation not found");
+
       const message = await Message.findById(messageId);
       if (!message) throw createError.NotFound("Message not found");
+
       if (message.sender.toString() !== userId)
         throw createError.Forbidden("You are not allowed to edit this message");
-      if (["image", "video", "audio", "file"].includes(message.type)) {
-        throw createError.BadRequest("You can't edit this type of message");
-      }
+
+      // Only block editing for pure attachments, allow mixed
+      // if (
+      //   ["image", "video", "audio", "file"].includes(message.type) &&
+      //   message.type !== "mixed"
+      // ) {
+      //   throw createError.BadRequest("You can't edit this type of message");
+      // }
+
       if (!content?.trim())
         throw createError.BadRequest("Content cannot be empty");
 
+      // Update text content (attachments remain unchanged)
       message.content = content;
       message.edited = true;
       message.editedAt = new Date();
       await message.save();
+
+      // Optional: Update conversation lastMessage if needed
+      conversation.lastMessage =
+        message.type === "text"
+          ? message.content
+          : message.type === "mixed"
+          ? `${message.content} [${message.attachments
+              .map((a) => a.type)
+              .join(", ")}]`
+          : `[${message.type}]`;
+      await conversation.save();
 
       return {
         success: true,
@@ -113,16 +142,19 @@ const messageService = {
     }
   },
 
-  // ✅ Reply Message
-  replyMessage: async (userId, messageId, content) => {
+  replyMessage: async (userId, conversationId, messageId, content) => {
     try {
+      if (!conversationId)
+        throw createError.BadRequest("Conversation ID is required");
+
+      const conversation = await Conversation.findById(conversationId);
+      if (!conversation) throw createError.NotFound("Conversation not found");
+
       const parentMessage = await Message.findById(messageId);
       if (!parentMessage) throw createError.NotFound("Message not found");
 
-      const conversation = await Conversation.findById(
-        parentMessage.conversation
-      );
-      if (!conversation) throw createError.NotFound("Conversation not found");
+      if (!content?.trim())
+        throw createError.BadRequest("Content cannot be empty");
 
       const reply = new Message({
         sender: userId,
@@ -133,6 +165,8 @@ const messageService = {
       });
 
       await reply.save();
+      await reply.populate("replyTo", "content attachments");
+
       conversation.lastMessage = reply.content;
       await conversation.save();
 
@@ -146,16 +180,26 @@ const messageService = {
   },
 
   // ✅ Single Pin Message System
-  pinMessage: async (messageId) => {
+  pinMessage: async (conversationId, messageId) => {
     try {
+      if (!conversationId)
+        throw createError.BadRequest("Conversation ID is required");
+      const conversation = await Conversation.findById(conversationId);
+      if (!conversation) throw createError.NotFound("Conversation not found");
       const message = await Message.findById(messageId);
       if (!message) throw createError.NotFound("Message not found");
 
-      // Unpin all other messages in same conversation
-      await Message.updateMany(
-        { conversation: message.conversation, pinned: true },
-        { $set: { pinned: false } }
-      );
+      if (message.pinned)
+        throw createError.BadRequest("Message is already pinned");
+
+      const pinnedMessage = await Message.findOne({
+        conversation: conversationId,
+        pinned: true,
+      });
+      if (pinnedMessage) {
+        pinnedMessage.pinned = false;
+        await pinnedMessage.save();
+      }
 
       message.pinned = true;
       await message.save();
@@ -170,10 +214,17 @@ const messageService = {
   },
 
   // ✅ Unpin
-  unpinMessage: async (messageId) => {
+  unpinMessage: async (conversationId, messageId) => {
     try {
+      if (!conversationId)
+        throw createError.BadRequest("Conversation ID is required");
+      const conversation = await Conversation.findById(conversationId);
+      if (!conversation) throw createError.NotFound("Conversation not found");
       const message = await Message.findById(messageId);
       if (!message) throw createError.NotFound("Message not found");
+      if (!message.pinned)
+        throw createError.BadRequest("Message is not pinned");
+
       message.pinned = false;
       await message.save();
       return {
@@ -208,8 +259,13 @@ const messageService = {
   },
 
   // ✅ Update Message Status (sent, delivered, read)
-  messageStatus: async (messageId, status) => {
+  messageStatus: async (conversationId, messageId, status) => {
     try {
+      if (!conversationId) {
+        throw createError.BadRequest("Conversation ID is required");
+      }
+      const conversation = await Conversation.findById(conversationId);
+      if (!conversation) throw createError.NotFound("Conversation not found");
       const message = await Message.findById(messageId);
       if (!message) throw createError.NotFound("Message not found");
       message.status = status;
@@ -224,8 +280,12 @@ const messageService = {
   },
 
   // ✅ Delete Message
-  deleteMessage: async (userId, messageId) => {
+  deleteMessage: async (userId, conversationId, messageId) => {
     try {
+      if (!conversationId)
+        throw createError.BadRequest("Conversation ID is required");
+      const conversation = await Conversation.findById(conversationId);
+      if (!conversation) throw createError.NotFound("Conversation not found");
       const message = await Message.findById(messageId);
       if (!message) throw createError.NotFound("Message not found");
       if (message.sender.toString() !== userId)
@@ -233,8 +293,10 @@ const messageService = {
           "You are not allowed to delete this message"
         );
 
-      if (message.mediaPublicId) {
-        await imagekit.deleteFile(message.mediaPublicId);
+      if (message.attachments) {
+        message.attachments.map(async (attachment) => {
+          await imagekit.deleteFile(attachment.fileId);
+        });
       }
 
       await Message.findByIdAndDelete(messageId);

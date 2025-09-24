@@ -12,7 +12,7 @@ const messageSchema = new Schema(
     content: {
       type: String,
       required: function () {
-        return !this.mediaUrl; // text required only if no media
+        return !this.attachments || this.attachments.length === 0;
       },
     },
     type: {
@@ -20,8 +20,17 @@ const messageSchema = new Schema(
       enum: ["text", "image", "audio", "video", "file"],
       default: "text",
     },
-    mediaUrl: { type: String, default: null },
-    mediaPublicId: { type: String },
+    attachments: [
+      {
+        url: { type: String, required: true },
+        fileId: { type: String, required: true },
+        type: {
+          type: String,
+          enum: ["image", "video", "audio", "file"],
+          required: true,
+        },
+      },
+    ],
     status: {
       type: String,
       enum: ["sent", "delivered", "read"],

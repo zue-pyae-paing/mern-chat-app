@@ -56,7 +56,7 @@ const userService = {
       throw createError.InternalServerError(error.message);
     }
   },
-  chageAvatar: async (file, userId) => {
+  changeAvatar: async (file, userId) => {
     try {
       if (!file) {
         throw createError.BadRequest("File is required");

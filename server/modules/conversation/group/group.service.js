@@ -352,8 +352,10 @@ const groupService = {
       const messages = await Message.find({ conversation: conversationId });
 
       for (const message of messages) {
-        if (message.mediaPublicId) {
-          await imageKit.deleteFile(message.mediaPublicId);
+        if (message.attachments) {
+          for (const attachment of message.attachments) {
+            await imageKit.deleteFile(attachment.fileId);
+          }
         }
       }
       if (conversation.groupImagePublicId) {

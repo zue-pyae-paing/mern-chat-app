@@ -36,7 +36,6 @@ const initSocket = (httpServer) => {
         status: "offline",
         lastSeen: Date.now(),
       });
-
       io.emit("user:offline", { userId: socket.userId, lastSeen: Date.now() });
     });
   });

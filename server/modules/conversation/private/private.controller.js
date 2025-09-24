@@ -1,5 +1,20 @@
 import conversationService from "./private.service.js";
 
+export const getAllConversations = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const result = await conversationService.getAllConversations(
+      userId,
+      req.query.search,
+      req.query.cursor,
+      req.query.limit
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createConversation = async (req, res, next) => {
   try {
     const userId = req.userId;
