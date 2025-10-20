@@ -20,12 +20,13 @@ const userService = {
   },
   changePassword: async (data, userId) => {
     try {
-      const { oldPassword, newPassword } = data;
+      console.log("change password data", data);
+      const { curentPassword, newPassword } = data;
       const user = await User.findById(userId);
       if (!user) {
         throw createError.NotFound("User not found");
       }
-      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      const isMatch = await bcrypt.compare(curentPassword, user.password);
       if (!isMatch) {
         throw createError.Unauthorized("Invalid credentials");
       }
@@ -34,7 +35,7 @@ const userService = {
       await user.save();
       return {
         success: true,
-        message: "Password changed successfully",
+        data: { message: "Password changed successfully" },
       };
     } catch (error) {
       throw createError.InternalServerError(error.message);
@@ -48,9 +49,15 @@ const userService = {
       }
       user.username = username;
       await user.save();
+      const userObj = user.toObject();
+      const { password: userPassword, ...userWithoutPassword } = userObj;
+
       return {
         success: true,
-        message: "Username changed successfully",
+        data: {
+          user: userWithoutPassword,
+          message: "Username changed successfully",
+        },
       };
     } catch (error) {
       throw createError.InternalServerError(error.message);
@@ -76,9 +83,14 @@ const userService = {
       user.avatar = avatar.url;
       user.avatarPublicId = avatar.fileId;
       await user.save();
+      const userObj = user.toObject();
+      const { password: userPassword, ...userWithoutPassword } = userObj;
       return {
         success: true,
-        message: "Avatar changed successfully",
+        data: {
+          user: userWithoutPassword,
+          message: "Avatar changed successfully",
+        },
       };
     } catch (error) {
       throw createError.InternalServerError(error.message);
@@ -92,9 +104,14 @@ const userService = {
       }
       user.bio = bio;
       await user.save();
+      const userObj = user.toObject();
+      const { password: userPassword, ...userWithoutPassword } = userObj;
       return {
         success: true,
-        message: "Bio changed successfully",
+        data: {
+          user: userWithoutPassword,
+          message: "Bio changed successfully",
+        },
       };
     } catch (error) {
       throw createError.InternalServerError(error.message);

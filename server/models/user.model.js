@@ -31,7 +31,7 @@ const userSchema = new Schema(
       enum: ["online", "offline"],
       default: "offline",
     },
-    bio: { type: String, maxlength: 150, default: null },
+    bio: { type: String, maxlength: 160, default: null },
     resetToken: {
       type: String,
       default: null,

@@ -2,6 +2,7 @@ import createError from "http-errors";
 import Conversation from "../../../models/conversation.model.js";
 import Message from "../../../models/message.model.js";
 import imageKit from "../../../config/imageKit.js";
+import User from "../../../models/user.model.js";
 
 const conversationService = {
   getAllConversations: async (userId, serach, cursor, limit = 20) => {
@@ -22,6 +23,7 @@ const conversationService = {
         })
         .populate({
           path: "lastMessage",
+          match: { _id: { $ne: null } },
           populate: { path: "sender", select: "username avatar" },
         })
         .sort({ updatedAt: -1 })
@@ -108,12 +110,20 @@ const conversationService = {
       if (!userId || !participantId) {
         throw createError.BadRequest("User IDs are required");
       }
+      const user = await User.findById(userId);
+      if (!user) {
+        throw createError.NotFound("User not found");
+      }
+
       if (userId === participantId) {
         throw createError.BadRequest(
           "Cannot create conversation with yourself"
         );
       }
-
+      const invalidUser = await User.findById(participantId);
+      if (!invalidUser) {
+        throw createError.NotFound("Target user not found");
+      }
       const participantKey = [userId, participantId].sort().join("_");
 
       // Check if exists

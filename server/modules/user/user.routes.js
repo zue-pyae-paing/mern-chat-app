@@ -12,11 +12,16 @@ import {
   bioValidation,
   changePasswordValidation,
   usernameValidation,
+  avatarValidation,
 } from "../../validations/user.validation.js";
 import { validate } from "../../middlewares/validation.middleware.js";
 import upload from "../../middlewares/upload.middleware.js";
 
 const router = Router();
+
+router.get("/", authorize, (req, res) => {
+  res.status(200).json({ success: true, data: { user: "message user" } });
+});
 
 router.get("/me", authorize, getUser);
 
@@ -36,7 +41,14 @@ router.put(
   changePassword
 );
 
-router.put("/me/avatar", authorize, upload.single("avatar"), changeAvatar);
+router.put(
+  "/me/avatar",
+  authorize,
+  upload.single("avatar"),
+  // avatarValidation,
+  // validate,
+  changeAvatar
+);
 
 router.put("/me/bio", authorize, bioValidation, validate, changeBio);
 

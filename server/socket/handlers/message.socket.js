@@ -3,10 +3,24 @@ import messageService from "../../modules/messages/message.service.js";
 
 const MessageSocket = (socket, io) => {
   // ✅ Send Message
+  socket.on("join:conversation", (data, callback) => {
+    try {
+      socket.join(data);
+      callback?.({ status: "ok", conversationId, userId: socket.userId });
+    } catch (error) {
+      callback?.({ status: "error", message: error.message });
+    }
+  });
+
   socket.on("message:send", async (data, callback) => {
     try {
       const { userId, conversationId, content, files } = data;
-      const result = await messageService.sendMessage(userId, conversationId, content, files);
+      const result = await messageService.sendMessage(
+        userId,
+        conversationId,
+        content,
+        files
+      );
       callback?.({ status: "ok", ...result });
       io.to(conversationId).emit("message:received", result.data.messageData);
     } catch (error) {
@@ -18,7 +32,11 @@ const MessageSocket = (socket, io) => {
   socket.on("message:edit", async (data, callback) => {
     try {
       const { userId, messageId, content } = data;
-      const result = await messageService.editMessage(userId, messageId, content);
+      const result = await messageService.editMessage(
+        userId,
+        messageId,
+        content
+      );
       callback?.({ status: "ok", ...result });
       io.to(result.data.messageData.conversation.toString()).emit(
         "message:edited",
@@ -33,7 +51,11 @@ const MessageSocket = (socket, io) => {
   socket.on("message:reply", async (data, callback) => {
     try {
       const { userId, messageId, content } = data;
-      const result = await messageService.replyMessage(userId, messageId, content);
+      const result = await messageService.replyMessage(
+        userId,
+        messageId,
+        content
+      );
       callback?.({ status: "ok", ...result });
       io.to(result.data.messageData.conversation.toString()).emit(
         "message:replied",

@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+
+  server:
+    build: ./server
+    container_name: server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env.development
+    volumes:
+      - ./server:/app
+      - server_node_modules:/app/node_modules
+    command: npm run dev
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - mongodb
+
+  client:
+    build: ./client
+    container_name: client
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    env_file:
+      - ./client/.env.development
+    volumes:
+      - ./client:/app
+      - client_node_modules:/app/node_modules
+    command: npm run dev
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - NEXT_WEBPACK_USEPOLLING=1
+    depends_on:
+      - server
+
+volumes:
+  mongodb:
+  server_node_modules:
+  client_node_modules:

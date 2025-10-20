@@ -6,7 +6,7 @@ import { getAllConversations } from "./private/private.controller.js";
 
 const router = Router();
 
-router.use("/", authorize, getAllConversations);
+router.get("/", authorize, getAllConversations);
 router.use("/private", privateRoutes);
 router.use("/group", groupRoutes);
 

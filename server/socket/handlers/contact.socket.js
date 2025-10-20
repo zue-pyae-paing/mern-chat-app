@@ -1,13 +1,23 @@
 import ContactService from "../../modules/contact/contact.service.js";
 
 const ContactSocket = (socket, io) => {
+  
   socket.on("contact:list", async (data, callback) => {
     try {
       const { userId, search } = data;
       const result = await ContactService.listContacts(userId, search);
 
       callback?.({ status: "ok", ...result });
-      
+    } catch (error) {
+      callback?.({ status: "error", message: error.message });
+    }
+  });
+
+  socket.on("contact:add", async (data, callback) => {
+    try {
+      const { userId, contactEmail } = data;
+      const result = await ContactService.addContact(userId, contactEmail);
+      callback?.({ status: "ok", ...result });
     } catch (error) {
       callback?.({ status: "error", message: error.message });
     }

@@ -1,5 +1,7 @@
-import User from "../../models/user.model.js";
 import createError from "http-errors";
+import User from "../../models/user.model.js";
+import Conversation from "../../models/conversation.model.js";
+
 const contactService = {
   listContacts: async (userId, search) => {
     try {
@@ -10,20 +12,27 @@ const contactService = {
           match: search ? { username: { $regex: search, $options: "i" } } : {},
           select: "username avatar status lastSeen",
         })
+        .populate({
+          path: "blocked",
+          select: "_id username avatar status lastSeen",
+        })
         .lean();
 
       if (!currentUser) {
         throw createError.NotFound("User not found");
       }
 
-      // Blocked ကို filter လုပ်မယ်
-      const contacts = (currentUser.contacts || []).filter(
-        (c) => !currentUser.blocked.includes(c._id)
-      );
+      const contacts =
+        currentUser.contacts ||
+        [].filter((contact) => !contact.includes(userId));
 
       return {
         success: true,
-        data: { message: "Contacts fetched successfully", contacts },
+        data: {
+          message: "Contacts fetched successfully",
+          contacts,
+          blocked: currentUser.blocked || [],
+        },
       };
     } catch (error) {
       throw createError.InternalServerError(error.message);
@@ -32,19 +41,47 @@ const contactService = {
   addContact: async (userId, contactEmail) => {
     try {
       const user = await User.findById(userId);
-      const contactUser = await User.findOne({ email: contactEmail });
-      if (!user) {
-        throw createError.NotFound("User not found");
+      const contactUser = await User.findOne({ email: contactEmail }).select(
+        "username email avatar status lastSeen _id"
+      );
+
+      if (!user) throw createError.NotFound("User not found");
+      if (!contactUser) throw createError.NotFound("Contact User not found");
+
+      if (user._id.toString() === contactUser._id.toString()) {
+        throw createError.BadRequest("You cannot add yourself as a contact");
       }
+
       if (user.contacts.includes(contactUser._id)) {
         throw createError.BadRequest("Contact already exists");
       }
+
+      // Generate participantKey
+      const participantKey = [user._id.toString(), contactUser._id.toString()]
+        .sort()
+        .join("_");
+
+      // Check existing conversation
+      let conversation = await Conversation.findOne({ participantKey });
+
+      if (!conversation) {
+        conversation = await Conversation.create({
+          type: "private",
+          participantKey,
+          participants: [user._id, contactUser._id],
+        });
+      }
+
       user.contacts.push(contactUser._id);
       await user.save();
 
       return {
         success: true,
-        data: { message: "Contact saved successfully" },
+        data: {
+          message: "Contact added successfully",
+          contact: contactUser,
+          conversationId: conversation._id,
+        },
       };
     } catch (error) {
       throw createError.InternalServerError(error.message);
@@ -105,6 +142,7 @@ const contactService = {
         throw createError.BadRequest("User is not blocked");
       }
       user.blocked.pull(blockedUserId);
+
       await user.save();
       return {
         success: true,
@@ -115,7 +153,7 @@ const contactService = {
     }
   },
 
-  listBlockedUsers: async (userId) => {
+  listBlockedUsers: async (userId, search) => {
     try {
       const user = await User.findById(userId);
       if (!user) {
@@ -123,7 +161,12 @@ const contactService = {
       }
       const blockedUsers = await User.find({
         _id: { $in: user.blocked },
-      }).select("username email avatar");
+      })
+        .select("username email avatar")
+        .populate({
+          path: "blocked",
+          match: search ? { username: { $regex: search, $options: "i" } } : {},
+        });
       return {
         success: true,
         data: { message: "Blocked users fetched successfully", blockedUsers },

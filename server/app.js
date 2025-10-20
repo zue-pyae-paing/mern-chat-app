@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 //routes
 app.get("/api/v1", (req, res) => {
-  res.status(200).json({ message: "Welcome to Chat App" });
+  res.status(200).json({ message: "Welcome to Chat App whit Docker " });
 });
 
 app.use("/api/v1/auth", authRoutes);
@@ -43,6 +43,8 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/conversations", conversationRoutes);
 
 app.use("/api/v1/messages", messageRoutes);
+
+console.log(process.env.NODE_ENV);
 
 //error
 app.use(errorHandler);

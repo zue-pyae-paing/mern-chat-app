@@ -4,19 +4,55 @@ const PrivateSocket = (socket, io) => {
   // helper → broadcast to both participants
   const notifyParticipants = (conversation, event, payload) => {
     conversation.participants.forEach((participant) => {
-      const id = participant._id ? participant._id.toString() : participant.toString();
+      const id = participant._id
+        ? participant._id.toString()
+        : participant.toString();
       io.to(id).emit(event, payload);
     });
   };
+
+  socket.on("join:conversation", async (data, callback) => {
+    try {
+      const { userId, conversationId } = data;
+      io.join(conversationId);
+      
+    } catch (error) {
+      callback?.({
+        status: "error",
+        message: error.message || "Failed to join conversation",
+      });
+    }
+  });
+
+  socket.on("allConversations", async (data, callback) => {
+    try {
+      const { userId } = data;
+      const result = await PrivateService.getAllConversations(userId);
+      callback?.({ status: "ok", ...result });
+    } catch (error) {
+      callback?.({
+        status: "error",
+        message: error.message || "Failed to list conversations",
+      });
+    }
+  });
 
   // list private conversations
   socket.on("private:list", async (data, callback) => {
     try {
       const { userId, search, cursor, limit } = data;
-      const result = await PrivateService.getPrivateConversations(userId, search, cursor, limit);
+      const result = await PrivateService.getPrivateConversations(
+        userId,
+        search,
+        cursor,
+        limit
+      );
       callback?.({ status: "ok", ...result });
     } catch (error) {
-      callback?.({ status: "error", message: error.message || "Failed to list conversations" });
+      callback?.({
+        status: "error",
+        message: error.message || "Failed to list conversations",
+      });
     }
   });
 
@@ -24,20 +60,27 @@ const PrivateSocket = (socket, io) => {
   socket.on("conversation:create", async (data, callback) => {
     try {
       const { userId, participantId } = data;
-      const result = await PrivateService.createConversation(userId, participantId);
+      const result = await PrivateService.createConversation(
+        userId,
+        participantId
+      );
       const conversation = result.data.conversation;
 
       // join both participants into the room
       [userId, participantId].forEach((id) => {
         const participantSocket = io.sockets.sockets.get(id.toString());
-        if (participantSocket) participantSocket.join(conversation._id.toString());
+        if (participantSocket)
+          participantSocket.join(conversation._id.toString());
       });
 
       notifyParticipants(conversation, "conversation:created", conversation);
 
       callback?.({ status: "ok", ...result });
     } catch (error) {
-      callback?.({ status: "error", message: error.message || "Failed to create conversation" });
+      callback?.({
+        status: "error",
+        message: error.message || "Failed to create conversation",
+      });
     }
   });
 
@@ -45,33 +88,58 @@ const PrivateSocket = (socket, io) => {
   socket.on("conversation:delete", async (data, callback) => {
     try {
       const { userId, conversationId } = data;
-      const result = await PrivateService.deletePrivateConversation(userId, conversationId);
+      const result = await PrivateService.deletePrivateConversation(
+        userId,
+        conversationId
+      );
 
-      io.to(conversationId.toString()).emit("conversation:deleted", result.data);
+      io.to(conversationId.toString()).emit(
+        "conversation:deleted",
+        result.data
+      );
 
       callback?.({ status: "ok", ...result });
     } catch (error) {
-      callback?.({ status: "error", message: error.message || "Failed to delete conversation" });
+      callback?.({
+        status: "error",
+        message: error.message || "Failed to delete conversation",
+      });
     }
   });
 
   // typing indicator
   socket.on("private:typing", async ({ conversationId }, callback) => {
     try {
-      socket.to(conversationId.toString()).emit("private:typing", { conversationId, userId: socket.userId });
-      callback?.({ status: "ok", data: { conversationId, userId: socket.userId } });
+      socket
+        .to(conversationId.toString())
+        .emit("private:typing", { conversationId, userId: socket.userId });
+      callback?.({
+        status: "ok",
+        data: { conversationId, userId: socket.userId },
+      });
     } catch (error) {
-      callback?.({ status: "error", message: error.message || "Failed to send typing event" });
+      callback?.({
+        status: "error",
+        message: error.message || "Failed to send typing event",
+      });
     }
   });
 
   // stop typing indicator
   socket.on("private:stop-typing", async ({ conversationId }, callback) => {
     try {
-      socket.to(conversationId.toString()).emit("private:stop-typing", { conversationId, userId: socket.userId });
-      callback?.({ status: "ok", data: { conversationId, userId: socket.userId } });
+      socket
+        .to(conversationId.toString())
+        .emit("private:stop-typing", { conversationId, userId: socket.userId });
+      callback?.({
+        status: "ok",
+        data: { conversationId, userId: socket.userId },
+      });
     } catch (error) {
-      callback?.({ status: "error", message: error.message || "Failed to send stop typing event" });
+      callback?.({
+        status: "error",
+        message: error.message || "Failed to send stop typing event",
+      });
     }
   });
 };

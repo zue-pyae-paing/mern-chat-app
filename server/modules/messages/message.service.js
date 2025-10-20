@@ -17,7 +17,7 @@ const messageService = {
       if (cursor) query.createdAt = { $lt: new Date(cursor) };
 
       const messages = await Message.find(query)
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: 1 })
         .populate("sender", "username avatar")
         .populate("replyTo", "content attachments")
         .limit(limit)
